@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coaching Fit — Aplicação</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --accent: #C8F135;
+    --accent-glow: rgba(200,241,53,0.18);
+    --dark: #0A0A0A;
+    --card: rgba(14,14,14,0.88);
+    --card-border: rgba(255,255,255,0.08);
+    --text: #F0EDE8;
+    --muted: #777;
+  }
+  body {
+    background: #111;
+    color: var(--text);
+    font-family: "DM Sans", sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px 40px;
+    position: relative;
+    overflow-x: hidden;
+  }
+  #bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: url("foto.png") center top / cover no-repeat;
+    filter: brightness(0.30) saturate(0.6);
+  }
+  #bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(160deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.75) 100%);
+  }
+  .container { position: relative; z-index: 1; width: 100%; max-width: 520px; }
+
+  .header { text-align: center; margin-bottom: 28px; }
+  .tag {
+    display: inline-block;
+    background: var(--accent);
+    color: #0A0A0A;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 100px;
+    margin-bottom: 12px;
+  }
+  .header h1 {
+    font-family: "Barlow Condensed", sans-serif;
+    font-size: clamp(34px, 9vw, 50px);
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 0.95;
+  }
+  .header h1 span { color: var(--accent); }
+  .header p { font-size: 13px; color: var(--muted); margin-top: 10px; line-height: 1.6; }
+
+  .progress-wrap { margin-bottom: 20px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
+  .progress-bar { height: 2px; background: #1f1f1f; border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.5s ease; box-shadow: 0 0 8px var(--accent-glow); }
+
+  .step { display: none; animation: fadeUp 0.35s ease forwards; }
+  .step.active { display: block; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+  .card { background: var(--card); border: 1px solid var(--card-border); border-radius: 20px; padding: 28px 24px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+  .step-num { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+  .step-title { font-family: "Barlow Condensed", sans-serif; font-size: clamp(24px, 7vw, 34px); font-weight: 800; line-height: 1.05; margin-bottom: 6px; text-transform: uppercase; }
+  .step-sub { font-size: 13px; color: var(--muted); margin-bottom: 22px; line-height: 1.6; }
+
+  .field { margin-bottom: 14px; }
+  label { display: block; font-size: 10px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  input[type=text], input[type=email], input[type=tel], textarea {
+    width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 10px; color: var(--text); font-family: "DM Sans", sans-serif;
+    font-size: 16px; padding: 13px 15px; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  textarea { resize: none; min-height: 100px; }
+
+  .choices { display: grid; gap: 9px; }
+  .choice-btn {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 11px; color: var(--text); font-family: "DM Sans", sans-serif;
+    font-size: 14px; padding: 14px 15px; text-align: left; cursor: pointer;
+    transition: all 0.18s; display: flex; align-items: center; gap: 11px;
+  }
+  .choice-btn:hover { border-color: rgba(200,241,53,0.35); }
+  .choice-btn.selected { border-color: var(--accent); background: rgba(200,241,53,0.07); box-shadow: 0 0 0 3px var(--accent-glow); }
+  .icon { font-size: 18px; flex-shrink: 0; }
+
+  .range-wrap { padding: 6px 0; }
+  input[type=range] { -webkit-appearance: none; width: 100%; height: 3px; background: #222; border-radius: 4px; border: none; padding: 0; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+  .range-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 9px; }
+  .range-val { text-align: center; font-family: "Barlow Condensed", sans-serif; font-size: 40px; font-weight: 900; color: var(--accent); margin: 8px 0 2px; }
+
+  .btn {
+    width: 100%; background: var(--accent); color: #0A0A0A; border: none;
+    border-radius: 11px; font-family: "DM Sans", sans-serif; font-size: 14px;
+    font-weight: 700; padding: 16px; cursor: pointer; margin-top: 20px;
+    letter-spacing: 0.08em; text-transform: uppercase; transition: opacity 0.2s, transform 0.15s;
+  }
+  .btn:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-back { background: none; border: none; color: var(--muted); font-family: "DM Sans", sans-serif; font-size: 12px; cursor: pointer; margin-top: 12px; display: block; text-align: center; width: 100%; transition: color 0.2s; }
+  .btn-back:hover { color: var(--text); }
+
+  .err { color: #ff5f5f; font-size: 11px; margin-top: 5px; display: none; }
+  .err.show { display: block; }
+
+  .success-icon { width: 64px; height: 64px; border-radius: 50%; background: rgba(200,241,53,0.09); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 20px; animation: pulse 2.2s ease infinite; }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 var(--accent-glow); } 50% { box-shadow: 0 0 0 14px transparent; } }
+  .success-title { font-family: "Barlow Condensed", sans-serif; font-size: 44px; font-weight: 900; text-transform: uppercase; line-height: 1; margin-bottom: 12px; }
+  .success-sub { color: var(--muted); font-size: 14px; line-height: 1.75; }
+  .hl { color: var(--accent); }
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<div class="container">
+
+  <div class="header">
+    <div class="tag">⚡ Coaching 1-on-1</div>
+    <h1>Transforma<br>teu <span>corpo</span></h1>
+    <p>Nutrição personalizada · Treino sob medida · Suporte diário</p>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label"><span id="stepLbl">Passo 1 de 7</span><span id="pctLbl">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="pFill" style="width:0%"></div></div>
+  </div>
+
+  <!-- 1 -->
+  <div class="step active" id="s1">
+    <div class="card">
+      <div class="step-num">01 / 07</div>
+      <h2 class="step-title">Quem é você?</h2>
+      <p class="step-sub">Preencha seus dados para eu entrar em contato.</p>
+      <div class="field"><label>Primeiro nome *</label><input type="text" id="fn" placeholder="Ex: Carlos" /></div>
+      <div class="field"><label>Sobrenome *</label><input type="text" id="ln" placeholder="Ex: Souza" /></div>
+      <div class="field"><label>E-mail *</label><input type="email" id="em" placeholder="seu@email.com" /></div>
+      <div class="field"><label>WhatsApp *</label><input type="tel" id="ph" placeholder="(11) 99999-9999" /></div>
+      <div class="err" id="e1">Preencha todos os campos.</div>
+      <button class="btn" onclick="next(1)">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="step" id="s2">
+    <div class="card">
+      <div class="step-num">02 / 07</div>
+      <h2 class="step-title">Qual é seu objetivo?</h2>
+      <p class="step-sub">Escolha o que representa o que você quer alcançar.</p>
+      <div class="choices" id="g-goal">
+        <button class="choice-btn" onclick="pick('goal',this)"><span class="icon">🔥</span> Emagrecer e secar</button>
+        <button class="choice-btn" onclick="pick('goal',this)"><span class="icon">💪</span> Ganhar massa muscular</button>
+        <button class="choice-btn" onclick="pick('goal',this)"><span class="icon">⚡</span> Emagrecer e ganhar músculo</button>
+        <button class="choice-btn" onclick="pick('goal',this)"><span class="icon">✨</span> Definição e tonificação</button>
+      </div>
+      <div class="err" id="e2">Selecione uma opção.</div>
+      <button class="btn" onclick="next(2)">Continuar →</button>
+      <button class="btn-back" onclick="back(2)">← Voltar</button>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="step" id="s3">
+    <div class="card">
+      <div class="step-num">03 / 07</div>
+      <h2 class="step-title">Sua experiência?</h2>
+      <p class="step-sub">Sem julgamentos — define o ponto de partida do seu plano.</p>
+      <div class="choices" id="g-exp">
+        <button class="choice-btn" onclick="pick('exp',this)"><span class="icon">🌱</span> Iniciante — nunca treinei de forma consistente</button>
+        <button class="choice-btn" onclick="pick('exp',this)"><span class="icon">🏃</span> Intermediário — treino há algum tempo, sem resultado</button>
+        <button class="choice-btn" onclick="pick('exp',this)"><span class="icon">🏆</span> Avançado — treino consistente, quero otimizar</button>
+      </div>
+      <div class="err" id="e3">Selecione uma opção.</div>
+      <button class="btn" onclick="next(3)">Continuar →</button>
+      <button class="btn-back" onclick="back(3)">← Voltar</button>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <div class="step" id="s4">
+    <div class="card">
+      <div class="step-num">04 / 07</div>
+      <h2 class="step-title">Dias por semana?</h2>
+      <p class="step-sub">Crio um plano realista para a sua rotina.</p>
+      <div class="range-wrap">
+        <div class="range-val" id="dv">3 dias</div>
+        <input type="range" min="2" max="6" value="3" oninput="document.getElementById('dv').textContent=this.value+' dias'" />
+        <div class="range-labels"><span>2 dias</span><span>6 dias</span></div>
+      </div>
+      <button class="btn" onclick="next(4)">Continuar →</button>
+      <button class="btn-back" onclick="back(4)">← Voltar</button>
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <div class="step" id="s5">
+    <div class="card">
+      <div class="step-num">05 / 07</div>
+      <h2 class="step-title">Sua alimentação?</h2>
+      <p class="step-sub">Me conta sua relação com a comida hoje.</p>
+      <div class="choices" id="g-diet">
+        <button class="choice-btn" onclick="pick('diet',this)"><span class="icon">😅</span> Muito desorganizada — como qualquer coisa</button>
+        <button class="choice-btn" onclick="pick('diet',this)"><span class="icon">🤔</span> Regular — às vezes bem, às vezes não</button>
+        <button class="choice-btn" onclick="pick('diet',this)"><span class="icon">🥗</span> Boa — me alimento bem, mas quero otimizar</button>
+        <button class="choice-btn" onclick="pick('diet',this)"><span class="icon">🚫</span> Tenho restrições / alergias alimentares</button>
+      </div>
+      <div class="err" id="e5">Selecione uma opção.</div>
+      <button class="btn" onclick="next(5)">Continuar →</button>
+      <button class="btn-back" onclick="back(5)">← Voltar</button>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <div class="step" id="s6">
+    <div class="card">
+      <div class="step-num">06 / 07</div>
+      <h2 class="step-title">Maior dificuldade?</h2>
+      <p class="step-sub">Isso me ajuda a focar no que vai realmente te transformar.</p>
+      <div class="choices" id="g-struggle">
+        <button class="choice-btn" onclick="pick('struggle',this)"><span class="icon">😔</span> Falta de motivação e consistência</button>
+        <button class="choice-btn" onclick="pick('struggle',this)"><span class="icon">😕</span> Não sei como me alimentar corretamente</button>
+        <button class="choice-btn" onclick="pick('struggle',this)"><span class="icon">⏰</span> Falta de tempo para treinar e cozinhar</button>
+        <button class="choice-btn" onclick="pick('struggle',this)"><span class="icon">📉</span> Faço tudo certo mas não vejo resultado</button>
+      </div>
+      <div class="err" id="e6">Selecione uma opção.</div>
+      <button class="btn" onclick="next(6)">Continuar →</button>
+      <button class="btn-back" onclick="back(6)">← Voltar</button>
+    </div>
+  </div>
+
+  <!-- 7 -->
+  <div class="step" id="s7">
+    <div class="card">
+      <div class="step-num">07 / 07</div>
+      <h2 class="step-title">Por que agora?</h2>
+      <p class="step-sub">Me conta o que te motivou a dar esse passo. Levo isso muito a sério.</p>
+      <div class="field">
+        <label>Sua mensagem *</label>
+        <textarea id="why" placeholder="Ex: Estou cansado de começar e parar. Quero de uma vez por todas transformar meu corpo..."></textarea>
+        <div class="err" id="e7">Por favor, escreva algo.</div>
+      </div>
+      <button class="btn" onclick="submitForm()">Enviar aplicação ⚡</button>
+      <button class="btn-back" onclick="back(7)">← Voltar</button>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="step" id="sFin">
+    <div class="card">
+      <div class="success-icon">⚡</div>
+      <h2 class="success-title">Aplicação<br><span class="hl">recebida!</span></h2>
+      <p class="success-sub">Obrigado por dar esse passo. Vou analisar e entrar em contato em até <strong style="color:#fff">48 horas</strong> pelo WhatsApp ou e-mail.<br><br>Me segue no Instagram para acompanhar transformações reais! 💪</p>
+    </div>
+  </div>
+
+</div>
+<script>
+  let cur=1; const tot=7; const sel={};
+  function upd(s){
+    const p=Math.round(((s-1)/tot)*100);
+    document.getElementById("pFill").style.width=p+"%";
+    document.getElementById("pctLbl").textContent=p+"%";
+    document.getElementById("stepLbl").textContent=s<=tot?"Passo "+s+" de "+tot:"Concluído";
+  }
+  function show(n){
+    document.querySelectorAll(".step").forEach(s=>s.classList.remove("active"));
+    document.getElementById(n<=tot?"s"+n:"sFin").classList.add("active");
+    upd(n); window.scrollTo({top:0,behavior:"smooth"});
+  }
+  function pick(g,btn){
+    document.querySelectorAll("#g-"+g+" .choice-btn").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected"); sel[g]=btn.textContent.trim();
+    const err=btn.closest(".card").querySelector(".err");
+    if(err) err.classList.remove("show");
+  }
+  function next(s){
+    if(s===1){
+      if(!document.getElementById("fn").value.trim()||!document.getElementById("em").value.trim()||!document.getElementById("ph").value.trim()){
+        document.getElementById("e1").classList.add("show"); return;
+      }
+    }
+    if(s===2&&!sel.goal){document.getElementById("e2").classList.add("show");return;}
+    if(s===3&&!sel.exp){document.getElementById("e3").classList.add("show");return;}
+    if(s===5&&!sel.diet){document.getElementById("e5").classList.add("show");return;}
+    if(s===6&&!sel.struggle){document.getElementById("e6").classList.add("show");return;}
+    show(s+1);
+  }
+  function back(s){show(s-1);}
+  function submitForm(){
+    if(!document.getElementById("why").value.trim()){document.getElementById("e7").classList.add("show");return;}
+    show(8);
+  }
+  upd(1);
+</script>
+</body>
+</html>
